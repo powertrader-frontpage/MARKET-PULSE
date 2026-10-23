@@ -1,0 +1,13 @@
+{
+  "name": "market-pulse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live NIFTY / BANKNIFTY / SENSEX dashboard with top movers and news-based reasons",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "DATA_PROVIDER=mock node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

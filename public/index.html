@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0E1116;color:#E6EDF3;font-family:'Inter',system-ui,sans-serif;padding:24px 16px 64px}
+a{color:#7AB8FF}a:hover{color:#B5D8FF}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:10px;background:#1F6FEB;display:flex;align-items:center;justify-content:center}
+.brand h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em}
+.muted{color:#9AA7B4}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#161B22;color:#9AA7B4;font-size:13px}
+.pill.open{background:#12261A;color:#56D364;font-weight:600}
+.pill.closed{background:#2B1618;color:#FF7B72;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+h2.label{margin:0 0 12px;font-size:14px;font-weight:600;color:#9AA7B4;letter-spacing:.06em;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:#161B22;border:1px solid #262E38;border-radius:16px}
+.ix{padding:20px;display:flex;flex-direction:column;gap:14px}
+.ix .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ix .name{font-size:15px;font-weight:600}
+.ix .mid{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.ix .val{font-size:30px;font-weight:600;letter-spacing:-.02em}
+.ix .chg{margin-top:4px;font-size:14px;font-weight:600}
+.up{color:#56D364}.down{color:#FF7B72}
+.ix .hl{display:flex;gap:24px;border-top:1px solid #262E38;padding-top:12px;font-size:13px;flex-wrap:wrap}
+.sec{overflow:hidden}
+.sec .head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;padding:20px 20px 16px}
+.sec h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.cols,.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 20px}
+.cols{padding:8px 20px;border-top:1px solid #262E38;border-bottom:1px solid #262E38;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9AA7B4}
+.row{border-bottom:1px solid #1E252E}
+.c-rank{width:28px}.c-stock{flex:1 1 180px;min-width:0}.c-ltp{width:96px;text-align:right}.c-chg{width:84px;text-align:right}.c-why{flex:3 1 320px;min-width:0}
+.row .c-rank{font-size:13px;color:#9AA7B4}
+.sname{font-size:15px;font-weight:600}.ssub{font-size:12px;color:#9AA7B4}
+.chip{display:inline-block;padding:4px 8px;border-radius:8px;background:#12261A;color:#56D364;font-size:13px;font-weight:600}
+.why{display:flex;align-items:flex-start;gap:10px}
+.tag{flex:none;padding:3px 8px;border-radius:6px;background:#1B2B45;color:#8DBBFF;font-size:11px;font-weight:600;white-space:nowrap}
+.tag.none{background:#232A33;color:#9AA7B4}
+.why .hl{font-size:14px;line-height:1.4}.why .src{margin-top:2px;font-size:12px;color:#9AA7B4}
+.err{padding:16px 20px;color:#FF7B72;font-size:14px}
+.skeleton{padding:20px;color:#9AA7B4;font-size:14px}
+footer{font-size:12px;line-height:1.5;color:#9AA7B4}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div class="logo"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2 14 L7 9 L10.5 12 L18 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div><h1>Market Pulse</h1><div class="muted" style="font-size:13px">Indian indices &amp; top movers</div></div>
+  </div>
+  <div class="pills">
+    <span class="pill" id="mkt"><span class="dot"></span><span id="mktText">Checking market…</span></span>
+    <span class="pill" id="src">Data source…</span>
+    <span class="pill" id="upd">Updated —</span>
+  </div>
+</header>
+
+<section>
+  <h2 class="label">Indices</h2>
+  <div class="grid" id="indices"><div class="skeleton">Loading indices…</div></div>
+</section>
+
+<div id="lists" class="wrap" style="gap:24px"></div>
+
+<footer>Reasons are the latest news headline found for each stock (Google News) and may not be the cause of the move. Always check the linked source. Not investment advice.</footer>
+</div>
+
+<script>
+const LISTS = [
+  { key: 'nifty', title: 'Top 10 · NIFTY 50', sub: 'Large caps · best performers today' },
+  { key: 'midcap', title: 'Top 10 · NIFTY Midcap 150', sub: 'Mid caps · best performers today' },
+  { key: 'smallcap', title: 'Top 10 · NIFTY Smallcap 250', sub: 'Small caps · best performers today' }
+];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = (n, d = 2) => Number.isFinite(n) ? n.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—';
+const safeUrl = (u) => /^https?:\/\//i.test(u || '') ? u : '';
+
+function spark(series) {
+  if (!series || series.length < 2) return '';
+  const w = 140, h = 52, min = Math.min(...series), max = Math.max(...series), span = max - min || 1;
+  return series.map((p, i) => (i ? 'L' : 'M') + ((i / (series.length - 1)) * w).toFixed(1) + ' ' + (h - 4 - ((p - min) / span) * (h - 8)).toFixed(1)).join(' ');
+}
+
+function renderIndices(list) {
+  $('indices').innerHTML = list.map((ix) => {
+    const up = ix.change >= 0, cls = up ? 'up' : 'down', color = up ? '#56D364' : '#FF7B72';
+    const d = spark(ix.series);
+    return `<div class="card ix">
+      <div class="top"><div class="name">${esc(ix.name)}</div><div class="muted" style="font-size:12px">${esc(ix.exchange)}</div></div>
+      <div class="mid"><div>
+        <div class="val mono">${num(ix.price)}</div>
+        <div class="chg mono ${cls}">${up ? '▲' : '▼'} ${num(Math.abs(ix.change))} (${up ? '+' : '-'}${num(Math.abs(ix.pct))}%)</div>
+      </div>${d ? `<svg width="140" height="52" viewBox="0 0 140 52" fill="none" role="img" aria-label="${esc(ix.name)} intraday trend"><path d="${d}" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}</div>
+      <div class="hl"><div><span class="muted">Open </span><span class="mono">${num(ix.open)}</span></div><div><span class="muted">High </span><span class="mono">${num(ix.high)}</span></div><div><span class="muted">Low </span><span class="mono">${num(ix.low)}</span></div></div>
+    </div>`;
+  }).join('');
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+  return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`;
+}
+
+function renderRow(r) {
+  const n = r.news, link = n && safeUrl(n.link);
+  const why = n
+    ? `<span class="tag">${esc(n.tag)}</span><div><div class="hl">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(n.headline)}</a>` : esc(n.headline)}</div><div class="src">${esc(n.source)}${n.publishedAt ? ' · ' + timeAgo(n.publishedAt) : ''} · latest headline</div></div>`
+    : `<span class="tag none">No news</span><div><div class="hl muted">No company-specific headline found in the last 2 days. Could be a sector or market-wide move.</div></div>`;
+  return `<div class="row">
+    <div class="c-rank mono">${r.rank}</div>
+    <div class="c-stock"><div class="sname">${esc(r.name)}</div><div class="ssub">${esc(r.symbol)}${r.sector ? ' · ' + esc(r.sector) : ''}</div></div>
+    <div class="c-ltp mono">${num(r.price)}</div>
+    <div class="c-chg"><span class="chip mono">+${num(r.pct)}%</span></div>
+    <div class="c-why why">${why}</div>
+  </div>`;
+}
+
+function ensureSections() {
+  if ($('lists').children.length) return;
+  $('lists').innerHTML = LISTS.map((l) => `<section class="card sec">
+    <div class="head"><div><h3>${esc(l.title)}</h3><div class="muted" style="font-size:13px;margin-top:2px">${esc(l.sub)}</div></div><div class="muted" style="font-size:12px">Ranked by % change · why it moved, from news</div></div>
+    <div class="cols"><div class="c-rank">#</div><div class="c-stock">Stock</div><div class="c-ltp">LTP (₹)</div><div class="c-chg">Change</div><div class="c-why">Why it's moving</div></div>
+    <div id="body-${l.key}"><div class="skeleton">Loading…</div></div>
+  </section>`).join('');
+}
+
+async function getJson(url) {
+  const r = await fetch(url);
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
+  return j;
+}
+
+async function refreshIndices() {
+  try {
+    const j = await getJson('/api/indices');
+    renderIndices(j.indices);
+    $('upd').textContent = 'Updated ' + new Date(j.updatedAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' });
+  } catch (e) { $('indices').innerHTML = `<div class="card err">Could not load indices: ${esc(e.message)}</div>`; }
+}
+
+async function refreshMovers() {
+  ensureSections();
+  await Promise.all(LISTS.map(async (l) => {
+    try {
+      const j = await getJson('/api/movers/' + l.key);
+      $('body-' + l.key).innerHTML = j.rows.map(renderRow).join('');
+    } catch (e) { $('body-' + l.key).innerHTML = `<div class="err">Could not load: ${esc(e.message)}</div>`; }
+  }));
+}
+
+function marketStatus() {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+  const get = (t) => parts.find((p) => p.type === t).value;
+  const mins = Number(get('hour')) * 60 + Number(get('minute'));
+  const open = !['Sat', 'Sun'].includes(get('weekday')) && mins >= 555 && mins <= 930; // 9:15 to 15:30 IST (holidays not handled)
+  $('mkt').className = 'pill ' + (open ? 'open' : 'closed');
+  $('mktText').textContent = open ? 'Market open' : 'Market closed';
+}
+
+getJson('/api/health').then((h) => { $('src').textContent = 'Data: ' + h.provider + (h.provider === 'yahoo' ? ' (delayed)' : h.provider === 'mock' ? ' (sample)' : ''); }).catch(() => {});
+marketStatus(); setInterval(marketStatus, 30000);
+refreshIndices(); setInterval(refreshIndices, 5000);
+refreshMovers(); setInterval(refreshMovers, 30000);
+</script>
+</body>
+</html>
