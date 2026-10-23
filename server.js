@@ -7,7 +7,7 @@ const { getNews } = require('./news');
 const constituents = require('./constituents');
 
 const PORT = Number(process.env.PORT) || 3000;
-const PROVIDERS = ['yahoo', 'zerodha', 'mock'];
+const PROVIDERS = ['yahoo', 'zerodha', 'fyers', 'mock'];
 const providerName = (process.env.DATA_PROVIDER || 'yahoo').toLowerCase();
 if (!PROVIDERS.includes(providerName)) {
   console.error(`DATA_PROVIDER must be one of: ${PROVIDERS.join(', ')}`);
@@ -67,6 +67,15 @@ function sendJson(res, code, body) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
+    // Optional password for the whole site: set DASH_PASSWORD (any username works).
+    if (process.env.DASH_PASSWORD) {
+      const given = Buffer.from((req.headers.authorization || '').replace(/^Basic /, ''), 'base64').toString().split(':').slice(1).join(':');
+      if (given !== process.env.DASH_PASSWORD) {
+        res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Market Pulse"' });
+        return res.end('Password required');
+      }
+    }
+    if (provider.handle && (await provider.handle(req, res, url))) return;
     if (url.pathname === '/api/health') return sendJson(res, 200, { ok: true, provider: providerName });
     if (url.pathname === '/api/indices') {
       return sendJson(res, 200, { updatedAt: new Date().toISOString(), indices: await cached('indices', INDEX_TTL, () => provider.getIndices()) });

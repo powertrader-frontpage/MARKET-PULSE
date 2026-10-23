@@ -171,7 +171,7 @@ function marketStatus() {
   $('mktText').textContent = open ? 'Market open' : 'Market closed';
 }
 
-getJson('/api/health').then((h) => { $('src').textContent = 'Data: ' + h.provider + (h.provider === 'yahoo' ? ' (delayed)' : h.provider === 'mock' ? ' (sample)' : ''); }).catch(() => {});
+getJson('/api/health').then((h) => { $('src').textContent = 'Data: ' + h.provider + (h.provider === 'yahoo' ? ' (delayed)' : h.provider === 'mock' ? ' (sample)' : ' (real-time)'); }).catch(() => {});
 marketStatus(); setInterval(marketStatus, 30000);
 refreshIndices(); setInterval(refreshIndices, 5000);
 refreshMovers(); setInterval(refreshMovers, 30000);
